@@ -1,4 +1,5 @@
 
+
 Row-oriented Algorithm:
    	for(row = n-1; row >= 0; row--){
    		x[row] = b[row];
@@ -11,45 +12,33 @@ Column-oriented Algorithm:
         for(row = 0; row < n; row++)
 		x[row]=b[row];
         for(col = n-1; col >= 0; col--){
-		x[col] != A[col][col];
+		x[col] /= A[col][col];
 		for(row = 0; row < col; row++)
 			x[row] -= A[row][col]*x[col];
         } 
 
-From section 5.5.1 - "OpenMP will only parallelize for loops that are in canonical form."
-
-     • The variable index must have integer or pointer type (e.g., it can't be a float ).
-     • The expressions start , end , and incr must have a compatible type. For example, if index is a pointer, then incr must have integer type.
-     • The expressions start , end , and incr must not change during execution of the loop.
-     • During execution of the loop, the variable index can only be modified by the “increment expression” in the for statement.
-
-
 a. Determine whether the outer loop of the row-oriented algorithm can be parallelized
 
-       Since the outer loops starting (n-1), ending (0), and increment (row--) variables 
-   do not change, the index (row) variable is only modified by the increment variable, and 
-   the format of the loop being one of canonical form, the outer loop of the row-oriented 
-   algorithm can be parallelized.
-
+	The outer loop of the row-oriented algorithm cannot be parallelized. This is because
+   the inner loop depends on x[col] where col=row+1. If the outer loop was parallelized for
+   two threads where n = 4, then thread1 would assign x[3] and x[2] and thread2 would
+   would assign x[1] and x[0]. The problem with this is that x[1] is dependent on x[2] (x[col]
+   where col = row+1) and x[2] would not have been assigned yet if thread2 went before thread1.
+      
 b. Determine whether the inner loop of the row-oriented algorithm can be parallelized.
 
-   	Since the inner loops starting (row+1), ending (n), and increment (col++) variables 
-   do not change, the index (col) variable is only modified by the increment variable, and 
-   the format of the loop being one of canonical form, the inner loop of the row-oriented 
-   algorithm can be parallelized.
+	The inner loop of the row-oriented algorithm can be parallelized. This is because x[row] - x[n]
+    will have been assigned by the outer loop so that x[col] (where col = row+1) isn't dependent on any
+    of the other threads.
 
 c. Determine whether the (second) outer loop of the column-oriented algorithm can be parallelized
    	
-	Since the (second) outer loops starting (n-1), ending (0), and increment (col--) variables
-   do not change, the index (col) variable is only modified by the increment variable, and 
-   the format of the loop being one of canonical form, the (second) outter loop of the column-oriented 
-   algorithm can be parallelized.
-
+	The second outer loop of the column-oriented algorithm can be parallelized. Since x[0..n] 
+    have been set in the first outer loop, the only line that has a dependent variable is
+    x[row] -= A[row][col]*x[col] in the inner loop. However since x[col] is always set by the same thread
+    no threads should need to depend on each other.
+	
 d. Determine whether the inner loop of the column-oriented algorithm can be parallelized.
 
-   	Since the inner loops starting (0), ending (col), and increment (row++) variables
-   do not change, the index (row) variable is only modified by the increment variable, and 
-   the format of the loop being one of canonical form, the inner loop of the column-oriented 
-   algorithm can be parallelized.
-	
+   	
 	     
