@@ -40,5 +40,8 @@ c. Determine whether the (second) outer loop of the column-oriented algorithm ca
 	
 d. Determine whether the inner loop of the column-oriented algorithm can be parallelized.
 
-   	
+   	The inner loop of the column-oriented algorithm can also be parallelized. This is for the same
+    reason why the second outer loop of the column-oriented algorithm can be parallelized. x[col] is
+    the only thing that the inner loop depends on, and since x[0-n] are already assigned in the first
+    outer loop the inner loop has to be parallelizable.   	
 	     
