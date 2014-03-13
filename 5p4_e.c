@@ -12,9 +12,9 @@
 #include <time.h>
 #include <omp.h>
 
-int n = 3;
 
-int column_orient(int A[n][n], int b[n], int x[n], int thread_count){
+
+int column_orient(int n, int A[n][n], int b[n], int x[n], int thread_count){
   int col;
   int row;
   int d = 0;
@@ -41,13 +41,13 @@ int column_orient(int A[n][n], int b[n], int x[n], int thread_count){
   return 0;
 }
 
-int row_orient(int A[n][n], int b[n], int x[n], int thread_count){
+int row_orient(int n, int A[n][n], int b[n], int x[n], int thread_count){
   
   int col;
   int row;
   int d = 0;
   while(d < 10){
-    
+    //#pragma omp parallel for num_threads(thread_count)
     for(row = n-1; row >= 0; row--){
       x[row] = b[row];
       
@@ -70,6 +70,7 @@ int row_orient(int A[n][n], int b[n], int x[n], int thread_count){
 
 
 int main(int argc, char *argv[]){
+  int n = strtol(argv[2], NULL, 10);
   int x[n];
   int b[n];
   int A[n][n];
@@ -93,10 +94,10 @@ int main(int argc, char *argv[]){
   
   
   int thread_count = strtol(argv[1], NULL, 10);
-  if(row_orient(A, b, x, thread_count) == 0)
+  if(row_orient(n, A, b, x, thread_count) == 0)
     printf("ROW ORIENT IS DONE\n");
 
-  if(column_orient(A, b, x, thread_count) == 0)
+  if(column_orient(n, A, b, x, thread_count) == 0)
     printf("COLUMN ORIENT IS DONE\n");
 
   return 0;
