@@ -10,77 +10,104 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
+#include <omp.h>
 
 int n = 3;
 
+int column_orient(int A[n][n], int b[n], int x[n], int thread_count){
+  int col;
+  int row;
+  int d = 0;
+  while(d < 10){
+    for(row = 0; row < n; row++)
+      x[row] = b[row];
+
+    for(col = n-1; col >= 0; col--){
+      x[col] /= A[col][col];
+#pragma omp parallel for num_threads(thread_count)
+      for(row = 0; row < col; row++)
+	x[row] -= A[row][col]*x[col];
+      
+    }
+    
+    
+    int z;
+    for(z = 0; z < n; z++)
+      printf("%d ", x[z]);
+    printf("\n");
+    d++;
+    
+  }
+  return 0;
+}
+
+int row_orient(int A[n][n], int b[n], int x[n], int thread_count){
+  
+  int col;
+  int row;
+  int d = 0;
+  while(d < 10){
+    
+    for(row = n-1; row >= 0; row--){
+      x[row] = b[row];
+      
+      #pragma omp parallel for num_threads(thread_count)
+      for(col=row+1; col < n; col++){
+	x[row] -= A[row][col]*x[col];
+
+      }
+      x[row] /= A[row][row];
+    }
+    int z;
+    for(z = 0; z < n; z++)
+      printf("%d ", x[z]);
+    printf("\n");
+    d++;
+  }   
+      return 0;
+}
 
 
 
-int main(){
+int main(int argc, char *argv[]){
   int x[n];
   int b[n];
   int A[n][n];
   int i;
+  int t;
   srand(time(NULL));
-  /*for(i = 0; i < n; i++)
-    b[i] = rand();
-  t = 0;
-  for(i = 0; i < n; i++)
-    for(t = 0; t < n ; t++)
-      A[i][t] = rand();
-  */
-
-  b[0] = 3;
-  b[1] = 1;
-  b[2] = 0;
-  
-  A[0][0] = 2;
-  A[1][0] = 0;
-  A[2][0] = 0;
-
-  A[0][1] = -3;
-  A[1][1] = 1;
-  A[2][1] = 0;
-
-  A[0][2] = 0;
-  A[1][2] = 1;
-  A[2][2] = -5;
-  
-  int col;
-  int row;
-  for(row = n-1; row >= 0; row--){
-    x[row] = b[row];
-    for(col=row+1; col < n; col++)
-      x[row] -= A[row][col]*x[col];
-    x[row] /= A[row][row];
+  int r;
+  for(i = 0; i < n; i++){
+      r = rand() ; 
+      b[i] = r;
+  }
+  for(i = 0; i < n; i++){
+    for(t = 0; t < n ; t++){
+      r = rand();
+      A[i][t] = r;
+    }
   }
   
-  for(i = 0; i < n; i++)
-    printf("%d ", x[i]);
-  printf("\n");
+
+  
+  
+  
+  int thread_count = strtol(argv[1], NULL, 10);
+  if(row_orient(A, b, x, thread_count) == 0)
+    printf("ROW ORIENT IS DONE\n");
+
+  if(column_orient(A, b, x, thread_count) == 0)
+    printf("COLUMN ORIENT IS DONE\n");
+
+  return 0;
 }
 
 
 
 
 
-/*
-int column_orient(){
-  int col;
-  int row;
-  for(row = 0; row < n; row++)
-    x[row] = b[row];
-  for(col = n-1; col >= 0; col--){
-    x[col] /= A[col][col];
-    for(row = 0; row < col; row++)
-      x[row] -= A[row][col]*x[col];
 
-  }
 
-  return 0;
-
-  }*/
 
 
 
